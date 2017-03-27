@@ -23,27 +23,52 @@ module.exports = function *search(next) {
     headers: { 'User-Agent': 'request' }
   };
 
+  const optionsAirportsFrom = {
+    url: `${host}/airports?q=${query.from}`,
+    headers: { 'User-Agent': 'request' }
+  };
+
+  const optionsAirportsTo = {
+    url: `${host}/airports?q=${query.to}`,
+    headers: { 'User-Agent': 'request' }
+  };
+
   const responseAirlines = yield request(optionsAirlines);
+  const responseAirportsFrom = yield request(optionsAirportsFrom);
+  const responseAirportsTo = yield request(optionsAirportsTo);
+
   const airlines = JSON.parse(responseAirlines.body);
   // const airlines = JSON.parse(responseAirlines.body).splice(4);
+
+  const airportsFrom = JSON.parse(responseAirportsFrom.body);
+  const airportsTo = JSON.parse(responseAirportsTo.body);
+  let routes = [];
+  _.forEach(airportsFrom, function (from) {
+    _.forEach(airportsTo, function (to) {
+      routes.push({'from': from.airportCode, 'to': to.airportCode});
+    });
+  });
 
   let results = {};
   let queries = [];
   let options;
-  for (let day in queryDates) {
-    if (queryDates.hasOwnProperty(day)) {
-      results[day] = [];
-
-      for ( let airline of airlines) {
-        const url = `${host}/flight_search/${airline.code}?date=${queryDates[day]}&from=${query.from}&to=${query.to}`;
-        options =  {
-          url: url,
-          headers: { 'User-Agent': 'request' }
-        };
-        console.log(`Make request to ${url}`);
-        queries.push(request2.getAsync(options).bind({day: day, results: results}).then(parseAnswer));
+  for (let r in routes) {
+    if (routes.hasOwnProperty(r)) {
+      let route = routes[r];
+      for (let day in queryDates) {
+        if (queryDates.hasOwnProperty(day)) {
+          results[day] = [];
+          for ( let airline of airlines) {
+            const url = `${host}/flight_search/${airline.code}?date=${queryDates[day]}&from=${route.from}&to=${route.to}`;
+            options =  {
+              url: url,
+              headers: { 'User-Agent': 'request' }
+            };
+            console.log(`Make request to ${url}`);
+            queries.push(request2.getAsync(options).bind({day: day, results: results}).then(parseAnswer));
+          }
+        }
       }
-
     }
   }
 
