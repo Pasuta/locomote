@@ -34,9 +34,13 @@ $(document).ready(function() {
     });
 
     function successFunc(data, status) {
-      renderSearchResults(data);
+      if (!Object.keys(data).length) alert('empty response');
+      else {
+        renderSearchResults(data);
+        resultsBlock.removeClass('hidden');
+      }
       loader.addClass('hidden');
-      resultsBlock.removeClass('hidden');
+
     }
 
     function errorFunc() {

@@ -1,7 +1,6 @@
 const views = require('co-views');
-const __dir = require('path').dirname(require.main.filename);
 
-const render = views(`${__dir}/views`, {
+const render = views('./views', {
   map: { html: 'swig' }
 });
 

@@ -6,6 +6,7 @@ const _ = require('lodash');
 const host = 'http://node.locomote.com/code-task';
 
 module.exports = function *search(next) {
+
   const ctx = this;
   const query = ctx.query;
 
@@ -39,9 +40,30 @@ module.exports = function *search(next) {
 
   const airlines = JSON.parse(responseAirlines.body);
   // const airlines = JSON.parse(responseAirlines.body).splice(4);
-
   const airportsFrom = JSON.parse(responseAirportsFrom.body);
   const airportsTo = JSON.parse(responseAirportsTo.body);
+
+  if (!airlines.length) {
+    this.status = 500;
+    this.type = 'json';
+    this.body = {error: 'Airlines is empty'};
+    return;
+  }
+
+  if (!airportsFrom.length) {
+    this.status = 500;
+    this.type = 'json';
+    this.body = {error: 'From destination is not recognized or not found. Please, check from param'};
+    return;
+  }
+  
+  if (!airportsTo.length) {
+    this.status = 500;
+    this.type = 'json';
+    this.body = {error: 'To destination is not recognized or not found. Please, check to param'};
+    return;
+  }
+  
   let routes = [];
   _.forEach(airportsFrom, function (from) {
     _.forEach(airportsTo, function (to) {
@@ -64,7 +86,7 @@ module.exports = function *search(next) {
               url: url,
               headers: { 'User-Agent': 'request' }
             };
-            console.log(`Make request to ${url}`);
+            // console.log(`Make request to ${url}`);
             queries.push(request2.getAsync(options).bind({day: day, results: results}).then(parseAnswer));
           }
         }
@@ -74,7 +96,7 @@ module.exports = function *search(next) {
 
   yield Promise.all(queries);
 
-  this.body = JSON.stringify(results);
+  this.body = results;
   yield next;
 };
 
@@ -84,8 +106,7 @@ function parseAnswer(response) {
   try {
     body = JSON.parse(response.body);
   } catch (e) {
-    console.error(e);
-    body = {error: "Smth goes wrong! Please, check your search data"};
+    body = {error: "Unfortunately we don't have flights for today! Please, try another date or from/to param"};
   }
   self.results[self.day] = self.results[self.day].concat(body);
 }
