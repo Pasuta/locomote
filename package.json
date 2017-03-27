@@ -1,0 +1,21 @@
+{
+  "name": "flight_search",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Pasiuta Vitaliy",
+  "license": "ISC",
+  "dependencies": {
+    "co-views": "^2.1.0",
+    "koa-body": "^1.6.0",
+    "koa-request": "^1.0.0",
+    "koa-router": "^5.4.0",
+    "koa-static": "^3.0.0",
+    "lodash": "^4.17.4",
+    "moment": "^2.18.1",
+    "swig": "^1.4.2"
+  }
+}
